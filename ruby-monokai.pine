@@ -12,11 +12,11 @@ ema_1h(length) => security(tickerid, "60", ema(close, length))
 // Color Definitions //
 ema8_color1  = #FD971F
 ema8_color2  = #FD971F
-ema12_color  = #9600F2
-ema32_color  = #EBDD95
+ema12_color  = #FCE7BD
+ema32_color  = #FCE7BD
 ema41_color  = #FD971F
-ema51_color  = #F8F8F0
-ema96_color  = #66D9EF
+ema51_color  = #F92672
+ema96_color  = #00FFCC
 ema243_color = #AE81FF
 
 // EMA Definitions //
@@ -32,7 +32,7 @@ ema243 = ema_1h(243)
 plot(ema8, style = circles, linewidth = 2, color = ema8_color1)
 ema8_plot = plot(ema8, style = line, linewidth = 1, color = ema8_color2)
 plot(ema12, style = line, linewidth = 2, color = ema12_color)
-plot(ema32, style = areabr, linewidth = 1, color = ema32_color, transp = 89)
+plot(ema32, style = areabr, linewidth = 1, color = ema32_color, transp = 90)
 ema41_above_ema8_plot = plot(ema41 >= ema8 ? ema41 : na, style = cross, linewidth = 1, color = ema41_color)
 ema41_below_ema8_plot = plot(ema41 < ema8 ? ema41 : na, style = cross, linewidth = 1, color = ema41_color)
 plot(ema51, style = line, linewidth = 2, color = ema51_color)
@@ -40,5 +40,5 @@ plot(ema96, style = line, linewidth = 3, color = ema96_color)
 plot(ema243, style = circles, linewidth = 2, color = ema243_color)
 
 // Color Fills //
-fill(ema8_plot, ema41_below_ema8_plot, color = green, transp = 70)
-fill(ema8_plot, ema41_above_ema8_plot, color = red, transp = 70)
+fill(ema8_plot, ema41_below_ema8_plot, #4ED037, transp = 70)
+fill(ema8_plot, ema41_above_ema8_plot, #AE81FF, transp = 70)
