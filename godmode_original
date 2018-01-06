@@ -1,0 +1,38 @@
+/ Tradingview.com
+// @author LazyBear, xSilas, Ni6HTH4wK
+// Drop a line if you use or modify this code.
+study(title="Godmode")
+n1 = input(9, "Channel Length")
+n2 = input(26, "Average Length")
+n3 = input(13, "Short length")
+multi = input(type=bool, defval=false, title="Multi-exchange?")
+src0 = hlc3
+
+src1 = security("BITFINEX:BTCUSD", period, src0), src2 =
+security("BTCE:BTCUSD", period, src0)
+src3 = security("OKCOIN:BTCUSD", period, src0), src4 =
+security("HUOBI:BTCCNY", period, src0)
+
+tci(src) => ema((src - ema(src, n1)) / (0.025 * ema(abs(src - ema(src,
+n1)), n1)), n2)+50
+mf(src) => rsi(sum(volume * (change(src) <= 0 ? 0 : src), n3),
+sum(volume * (change(src) >= 0 ? 0 : src), n3))
+willy(src) => 60 * (src - highest(src, n2)) / (highest(src, n2) -
+lowest(src, n2)) + 80
+csi(src) => avg(rsi(src, n3),tsi(src0,n1,n2)*50+50)
+
+godmode(src) => avg(tci(src),csi(src),mf(src),willy(src))
+tradition(src) => avg(tci(src),mf(src),rsi(src, n3))
+
+wt1 = multi?avg(godmode(src0),godmode(src1),godmode(src2),godmode(src3),godmode(src4)):tradition(src0)
+wt2 = sma(wt1,6)
+
+extended = wt2<20 ? wt2+5 : wt2>80 ? wt2-5 : na
+
+plot(wt1, color=green)
+plot(wt2, color=red)
+plot(ema((wt1-wt2)*2+50,n3), color=aqua, style=area, transp=80, histbase=50)
+plot(extended, title="Caution!", color=yellow, style=circles, linewidth=2)
+
+hline(80)
+hline(20)
