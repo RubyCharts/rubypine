@@ -1,0 +1,106 @@
+//@version=3
+study(title = "ATR of ALMA, 3X almaoffset + Multitimeframe",
+shorttitle="ATRALMA", overlay=true)
+//SNOW_CITY re-tooled and tweaked version of ALMAB MTF
+// Use on 1Min Charts, optimized to BITMEX, speculative swings weeeeeeeeee
+source = close
+
+almaedwindow = input(title="AlmaWindow", type=integer, defval=100)
+almaoffset = input(title="offset", type=float, defval=0.85)
+almasigma = input(title="sigma", type=float, defval=6)
+medrestf = input(title="TF1; TF0 is chart ( set to 1 Min )",
+type=resolution, defval="15")
+long_er_restf = input(title="TF2", type=string, defval="240")
+//
+almaedwindow_2 = input(title="AlmaWindow2", type=integer, defval=200)
+almaoffset_2 = input(title="offset2", type=float, defval=0.85)
+almasigma_2 = input(title="sigma2", type=float, defval=6)
+
+ATRlength = input(100, minval=1)
+ATRMult = input(3, minval=1)
+ATRMult2 = input(4, minval=1)
+ATRMult3 = input(7, minval=1)
+ATRMult4 = input(10, minval=1)
+ATR = rma(tr(true), ATRlength)
+//
+ATRlength_2 = input(100, minval=1)
+ATRMult_2 = input(3, minval=1)
+ATRMult2_2 = input(4, minval=1)
+ATRMult3_2 = input(7, minval=1)
+ATRMult4_2 = input(10, minval=1)
+ATR_2 = rma(tr(true), ATRlength_2)
+//
+almamed = alma(source, almaedwindow, almaoffset, almasigma)
+almamed_2 = alma(source, almaedwindow_2, almaoffset_2, almasigma_2)
+
+
+emaup = almamed+(ATR*ATRMult)
+emadw = almamed-(ATR*ATRMult)
+emahigh = almamed+(ATR*ATRMult2)
+emalow = almamed-(ATR*ATRMult2)
+emahigh2 = almamed+(ATR*ATRMult3)
+emalow2 = almamed-(ATR*ATRMult3)
+emahighx = almamed+(ATR*ATRMult4)
+emalowx = almamed-(ATR*ATRMult4)
+//
+emaup_2 = almamed_2+(ATR_2*ATRMult_2)
+emadw_2 = almamed_2-(ATR_2*ATRMult_2)
+emahigh_2 = almamed_2+(ATR_2*ATRMult2)
+emalow_2 = almamed_2-(ATR_2*ATRMult2)
+emahighx_2 = almamed_2+(ATR_2*ATRMult4)
+emalowx_2 = almamed_2-(ATR_2*ATRMult4)
+//
+
+//Med TF Tracers
+almatfpv = security(tickerid,medrestf ,almamed)
+almatfup = security(tickerid,medrestf ,emaup)
+almatfdw = security(tickerid,medrestf ,emadw)
+almatfhigh = security(tickerid,medrestf ,emahigh)
+almatflow = security(tickerid,medrestf ,emalow)
+almatfhigh2 = security(tickerid,medrestf ,emahigh2)
+almatflow2 = security(tickerid,medrestf ,emalow2)
+almatfhighx = security(tickerid,medrestf ,emahighx)
+almatflowx = security(tickerid,medrestf ,emalowx)
+//
+//LongTF res Tracers
+almatfpv_2 = security(tickerid,long_er_restf ,almamed_2)
+almatfup_2 = security(tickerid,long_er_restf ,emaup_2)
+almatfdw_2 = security(tickerid,long_er_restf ,emadw_2)
+almatfhigh_2 = security(tickerid,long_er_restf ,emahigh_2)
+almatflow_2 = security(tickerid,long_er_restf ,emalow_2)
+almatfhighx_2 = security(tickerid,long_er_restf ,emahighx_2)
+almatflowx_2 = security(tickerid,long_er_restf ,emalowx_2)
+
+
+plot(emaup, title="EMAUP", color=red)
+plot(emadw, title="EMADW", color=green)
+plot(emahigh, title="EMAHigh", color=red)
+plot(emalow, title="EMALow", color=green)
+plot(emahigh2, title="EMAHigh", color=red)
+plot(emalow2, title="EMALow", color=green)
+plot(emahighx, title="StopLossShort", color=silver)
+plot(emalowx, title="StopLossLong", color=silver)
+
+plot(almamed,linewidth=2,color=purple)
+plot(almatfup,linewidth=2,color=blue)
+plot(almatfdw,linewidth=2,color=blue)
+plot(almatfpv,linewidth=2,color=green)
+plot(almatfhigh,linewidth=2,color=red)
+plot(almatflow,linewidth=2,color=red)
+plot(almatfhigh2,linewidth=2,color=red)
+plot(almatflow2,linewidth=2,color=red)
+plot(almatfhighx,linewidth=2,color=silver)
+plot(almatflowx,linewidth=2,color=silver)
+
+//
+
+plot(almamed_2,style=circles,linewidth=1,color=purple)
+plot(almatfup_2,linewidth=1,style=circles,color=blue)
+plot(almatfdw_2,linewidth=1,style=circles,color=blue)
+plot(almatfpv_2,linewidth=1,style=circles,color=green)
+plot(almatfhigh_2,linewidth=1,style=circles,color=red)
+plot(almatflow_2,linewidth=1,style=circles,color=red)
+plot(almatfhighx_2,linewidth=1,style=circles,color=silver)
+plot(almatflowx_2,linewidth=1,style=circles,color=silver)
+
+//
