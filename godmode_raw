@@ -1,0 +1,145 @@
+//@version=3
+study("A0X GM v3.3, TP Signals, 7min adj for 1m chart")
+// A0X GM v3.2 by SNOW_CITY
+// Original GM inputs
+n1 = input(14, title= "Channel Length")
+n2 = input(7, title= "Average Length")
+n3 = input(14, title= "Short length")
+
+//triple tracers
+n4 = input(4.2, step=0.2, title= "Upper Trace")
+n5 = input(-4.6, step=0.2, title= "Lower Trace")
+n6 = input(15, "SMA Weight /2")
+n7 = input(26, "FastSMA weight/2")
+
+
+//ALMA inputs for varible 'ma3' plot 'alma slowline'
+n8 = input(14, "ALMAWindow/2")
+n9 = input(85, step=5, title= "ALMAOffset/100")
+n10 = input(12, "ALMASigma/2")
+
+// Varibles for RelStr osc
+n11=input(24, "RelStrRsi")
+n12=input(11, "RelStrRsi barsback change")
+n13=input(12, "RelStralma influence to tradition")
+
+// TAKEPROFIT Delta-V
+a1=input(15, "RelStrALMAWindow/2")
+a2=input(85, step=5, title= "RelStrALMAOffset/100")
+a3=input(13, "RelStrALMASigma/2")
+
+a6=input(20, 'RelStrrsi')
+a7=input(9, 'RelStrrsi barsback change')
+a11=input(19, 'RelStrrsi change threshold/10')
+a12=input(3,step=0.25, title= 'RelStrrsi upperwindow')
+a13=input(-3,step=0.25, title= 'RelStrrsi lowerwindow')
+a14=input(16, title = 'TakeProfit Barssince Lockout')
+//END TAKEPROFIT Delta-V
+a15=input(10, title='barsback SMA Flat')
+
+
+//Resolution Setting
+// Inputs for alternate resolution
+resCustom = input(title="Timeframe and Multiplier for BarsBack,
+lengths, etc.", type=string, defval="7")
+res = resCustom
+
+//A0X Sources
+pricesrc0 = input(defval= hl2)
+pricesrc1 = input(defval = hl2)
+
+// TP Delta-V Sources
+pricesrc2 = input(defval = high)
+pricesrc3 = input(defval = low)
+pricesrc4 = input(defval = hl2)
+
+// A0X Sources:
+src0 = security(tickerid, res, pricesrc0)
+src1 = security(tickerid, res, pricesrc1)
+
+// TP Delta-V Sources:
+asrc0 = security(tickerid, '1' , pricesrc2)
+asrc1 = security(tickerid, '1' , pricesrc3)
+asrc2 = security(tickerid, '1' , pricesrc4)
+//Volume for Selected Resolution
+pvolume0= security(tickerid, res, volume)
+
+
+//A0X MATHS
+tci = ema((src0 - ema(src0, (n1*7))) / (0.025 * ema(abs(src0 -
+ema(src0, (n1*7))), (n1*7))), (n2*7))+50
+mf = rsi(sum(pvolume0 * (change(src0) <= 0 ? 0 : src0), (n3*7)),
+sum(pvolume0 * (change(src0) >= 0 ? 0 : src0), (n3*7)))
+willy = 60 * (src0 - highest(src0, (n2*7))) / (highest(src0, (n2*7)) -
+lowest(src0, (n2*7))) + 80
+csi = avg(rsi(src0, (n3*7)),tsi(src0,(n1*7),(n2*7))*50+50)
+
+godmode = avg(tci,csi,mf,willy)
+tradition = avg(tci,mf,rsi(src0, (n3*7)))
+relstr = (change(alma((rsi(src1,(n11*7))),(8*7),0.85,5),(n12*7)))
+relstralma = (alma(relstr,(9*7),0.85,6)*(n13/10))
+
+
+// TP Delta-V MATHS
+RelStr_tp = (change(alma((rsi(asrc2,(a6*3))),(a1)/2,a2/100,a3/2),(a7)))
+
+RelStr_tphi = max((change(alma((rsi(asrc0,(a6*3))),(a1)/2,a2/100,a3/2),(a7))),a12)
+RelStrMove_tphi = if(change(RelStr_tphi,1))>(a11/10)
+    4
+else
+    0
+
+RelStr_tplo = min((change(alma((rsi(asrc1,(a6*3))),(a1)/2,a2/100,a3/2),(a7))),a13)
+RelStrMove_tplo = if(change(RelStr_tplo,1))>(a11/10)
+    -4
+else
+    0
+
+tpcon1 = RelStrMove_tphi
+tpcon2 = RelStrMove_tplo
+
+
+ma1 = (tradition + relstralma)
+ma2 = alma((ema(ma1,(n7*7)/2)),(n8*7)/2,n9/100,n10)
+ma3 = (alma((ema(ma1,(n7*7)/2)),(n8*7)/2,n9/100,n10)) + n4
+ma4 = (alma((ema(ma1,(n7*7)/2)),(n8*7)/2,n9/100,n10)) + n5
+
+//SMA flat logic
+
+//smaflat =
+
+//TakeProfit MA logic
+
+
+
+
+//TakeProfitMarkers
+TakeProfitHigh = if((change(RelStrMove_tphi,1)<0) and
+(barssince(crossover(ma1,ma4))) and (barssince(crossover(ma1,ma2)))
+>a14)
+    1
+else
+    0
+
+TakeProfitLow = if((change(RelStrMove_tplo,1)<0) and
+(barssince(crossunder(ma1,ma3))) and (barssince(crossunder(ma1,ma2)))
+>a14)
+    -1
+else
+    0
+
+//END A0X GM LOGIC
+
+plot(ma1, title = 'rssma tradition', color = green)
+plot(ma2, title = 'alma slowline', color = red)
+plot(ma3, title = 'alma hi line', color = red)
+plot(ma4, title = 'alma lo line', color = red)
+plot (tpcon1, title = 'RelStr_TPhi', color = green, style = columns)
+plot (tpcon2, title = 'RelStr_TPlo', color = blue, style = columns)
+plot((TakeProfitHigh), title = 'TP_LONGS' , color = TakeProfitHigh > 0
+? green : na, style = cross, linewidth = 4 )
+plot((TakeProfitLow), title = 'TP_SHORTS', color = TakeProfitLow < 0 ?
+red : na, style = cross, linewidth = 4  )
+plot(RelStr_tphi, title = 'RelStr OSC', color=green)
+plot(RelStr_tplo, title = 'RelStr TP OSC', color=red)
+//plot (smaflat, title = 'smaflat', color = blue, style = columns)
