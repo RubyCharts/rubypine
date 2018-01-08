@@ -1,0 +1,167 @@
+// from https://pastebin.com/PR5YrUGd or Heffer Huffer 4x HEFFER HUFFER 4x FRAMA MTF on January 8 2018
+
+
+//@version=3
+//SNOW_CITY tweaked version of FRAMA-DT with LinReg added
+study("Triple Tracer Fractal Adaptive Moving Average",shorttitle="3X FRAMA",overlay=true)
+price = input(hl2)
+
+fracres = input(type = string, defval = "240", title = "Frac Timeframe")
+//showcloud = input(true, title = 'show cloud')
+//showrt = input(true, title = 'show real time')
+//agr = input(true, title = 'show agressive line')
+//
+len_1 = input(title = 'Length1',defval=64,step =1, minval=1)
+FC_1 = input(defval=20,minval=1)
+SC_1 = input(defval=128,step =1, minval=1)
+
+len_2 = input(title = 'Length2',defval=137,step =3,minval=1)
+FC_2 = input(defval=20,minval=1)
+SC_2 = input(defval=512,step = 1,minval=1)
+
+len_3 = input(title = 'Length3', defval=14,step = 1,minval=1)
+FC_3 = input(defval=6,minval=1)
+SC_3 = input(defval=198,step = 1,minval=1)
+
+length_lb=input(16, title="Period of Fractal AMA (even #)",minval=4,maxval=60)
+w_lb=input(-4.6, title="w_lb", type=float)
+
+f3ofst = input(defval=26,title = "Fractal3 Barsahead Offset")
+linr_len = input(title = 'LinReg Length', defval=15,minval=1)
+linr_len2 = input(title = 'LinReg LongLength', defval=155,minval=1)
+
+len1_1 = len_1/2
+e = 2.7182818284590452353602874713527
+w_1 = log(2/(SC_1+1)) / log(e) // Natural logarithm (ln(2/(SC_1+1))) workaround
+H1_1 = highest(high,len1_1)
+L1_1 = lowest(low,len1_1)
+N1_1 = (H1_1-L1_1)/len1_1
+H2_1 = highest(high,len1_1)[len1_1]
+L2_1 = lowest(low,len1_1)[len1_1]
+N2_1 = (H2_1-L2_1)/len1_1
+H3_1 = highest(high,len_1)
+L3_1 = lowest(low,len_1)
+N3_1 = (H3_1-L3_1)/len_1
+dimen1_1 = (log(N1_1+N2_1)-log(N3_1))/log(2)
+dimen_1 = iff(N1_1>0 and N2_1>0 and N3_1>0,dimen1_1,nz(dimen1_1[1]))
+alpha1_1 = exp(w_1*(dimen_1-1))
+oldalpha_1 = alpha1_1>1?1:(alpha1_1<0.01?0.01:alpha1_1)
+oldN_1 = (2-oldalpha_1)/oldalpha_1
+N_1 = (((SC_1-FC_1)*(oldN_1-1))/(SC_1-1))+FC_1
+alpha__1 = 2/(N_1+1)
+alpha_1 = alpha__1<2/(SC_1+1)?2/(SC_1+1):(alpha__1>1?1:alpha__1)
+out_1() =>    
+    out_1eq = na
+    out_1eq := (1-alpha_1)*nz(out_1eq[1]) + alpha_1*price
+//
+//Second FRAMA
+
+len1_2 = len_2/2
+w_2 = log(2/(SC_2+1)) / log(e) // Natural logarithm (ln(2/(SC_2+1))) workaround
+H1_2 = highest(high,len1_2)
+L1_2 = lowest(low,len1_2)
+N1_2 = (H1_2-L1_2)/len1_2
+H2_2 = highest(high,len1_2)[len1_2]
+L2_2 = lowest(low,len1_2)[len1_2]
+N2_2 = (H2_2-L2_2)/len1_2
+H3_2 = highest(high,len_2)
+L3_2 = lowest(low,len_2)
+N3_2 = (H3_2-L3_2)/len_2
+dimen1_2 = (log(N1_2+N2_2)-log(N3_2))/log(2)
+dimen_2 = iff(N1_2>0 and N2_2>0 and N3_2>0,dimen1_2,nz(dimen1_2[1]))
+alpha1_2 = exp(w_2*(dimen_2-1))
+oldalpha_2 = alpha1_2>1?1:(alpha1_2<0.01?0.01:alpha1_2)
+oldN_2 = (2-oldalpha_2)/oldalpha_2
+N_2 = (((SC_2-FC_2)*(oldN_2-1))/(SC_2-1))+FC_2
+alpha__2 = 2/(N_2+1)
+alpha_2 = alpha__2<2/(SC_2+1)?2/(SC_2+1):(alpha__2>1?1:alpha__2)
+
+out_2() =>
+    out_2eq = 0.0
+    out_2eq := (1-alpha_2)*nz(out_2eq[1]) + alpha_2*price
+
+len1_3 = len_3/2
+w_3 = log(2/(SC_3+1)) / log(e) // Natural logarithm (ln(2/(SC_3+1))) workaround
+H1_3 = highest(high,len1_3)
+L1_3 = lowest(low,len1_3)
+N1_3 = (H1_3-L1_3)/len1_3
+H2_3 = highest(high,len1_3)[len1_3]
+L2_3 = lowest(low,len1_3)[len1_3]
+N2_3 = (H2_3-L2_3)/len1_3
+H3_3 = highest(high,len_3)
+L3_3 = lowest(low,len_3)
+N3_3 = (H3_3-L3_3)/len_3
+dimen1_3 = (log(N1_3+N2_3)-log(N3_3))/log(2)
+dimen_3 = iff(N1_3>0 and N2_3>0 and N3_3>0,dimen1_3,nz(dimen1_3[1]))
+alpha1_3 = exp(w_3*(dimen_3-1))
+oldalpha_3 = alpha1_3>1?1:(alpha1_3<0.01?0.01:alpha1_3)
+oldN_3 = (2-oldalpha_3)/oldalpha_3
+N_3 = (((SC_3-FC_3)*(oldN_3-1))/(SC_3-1))+FC_3
+alpha__3 = 2/(N_3+1)
+alpha_3 = alpha__3<2/(SC_3+1)?2/(SC_3+1):(alpha__3>1?1:alpha__3)
+out_3() =>    
+    out_3eq = 0.0
+    out_3eq := (1-alpha_3)*nz(out_3eq[1]) + alpha_3*price
+//
+//LB FRAC
+n3_lb=(highest(high,length_lb)-lowest(low,length_lb))/length_lb
+hd2_lb=highest(high,length_lb/2)
+ld2_lb=lowest(low,length_lb/2)
+n2_lb=(hd2_lb-ld2_lb)/(length_lb/2)
+n1_lb=(nz(hd2_lb[round(length_lb/2)])-nz(ld2_lb[round(length_lb/2)]))/round(length_lb/2)
+dimen_lb=(n1_lb>0 and n2_lb>0 and n3_lb>0 ? (log(n1_lb+n2_lb)-log(n3_lb))/log(2) : 0)
+alpha_lb=exp(w_lb*(dimen_lb-1))
+sc_lb=(alpha_lb<.01 ? .01 : (alpha_lb>1 ? 1 : alpha_lb))
+//prev(x) => not na(x[1]) ? x[1] : 0
+
+out_4() =>
+    out_4eq= 0.0
+    out_4eq := (cum(1)<=2*length_lb ? price : price*sc_lb+nz(out_4eq[1])*(1-sc_lb))
+
+
+//lin_reg = linreg(price,linr_len,0)
+//lin_reg2 = linreg(price,linr_len2,0)
+//
+out_1h1 = (out_1()>out_2() ? out_1() : out_2())
+out_1h2 = (out_2()>out_3() ? out_2() : out_3())
+out_1h = (out_1h1>out_1h2 ? out_1h1 : out_1h2)
+
+out_1l1 = (out_1()<out_2() ? out_1() : out_2())
+out_1l2 = (out_2()<out_3() ? out_2() : out_3())
+out_1l = (out_1l1<out_1l2 ? out_1l1 : out_1l2)
+//
+
+//out_2h1 = (out_1()>out_2() ? out_1() : out_2())
+//out_2h2 = (out_2()>out_3() ? out_2() : out_3())
+//out_2h3 = (out_3()>out_4() ? out_3() : out_4())
+
+//out_1h_0 = (out_2h1>out_2h2 ? out_2h1 : out_2h2)
+//out_1h_1 = (out_1h_0>out_2h3 ? out_1h_0 : out_2h3)
+
+//out_2l1 = (out_1<out_2 ? out_1 : out_2)
+//out_2l2 = (out_2<out_3 ? out_2 : out_3)
+//out_2l3 = (out_3<out_4 ? out_3 : out_4)
+
+
+//out_2l_0 = (out_2l1<out_2l2 ? out_2l1 : out_2l2)
+//out_2l_1 = (out_2l_0<out_2l3 ? out_2l_0 : out_2l3)
+
+fractfhi = security(tickerid,fracres, out_1h)
+fractflo = security(tickerid,fracres, out_1l)
+fract4tf = security(tickerid,fracres, out_4())
+
+//plot(out_1,title="FRAMAout1",offset = f3ofst,color=showcloud ? orange : na,transp=0, linewidth = 1)
+//plot(out_2,title="FRAMAout2",offset = f3ofst,color=showcloud ? blue : na,transp=0, linewidth = 1)
+//plot(out_3,title="FRAMAout3",offset = f3ofst,color=showcloud ? red : na,transp=0, linewidth = 1)
+//plot(out_4, color=showcloud ? orange : na,offset = f3ofst, linewidth=1)
+//
+//plot(agr? out_1h_1:out_1h,title="FRAMAcloud2",offset = f3ofst,color=showcloud ? blue : na,transp=0, linewidth = 1)
+//plot(agr?out_2l_1:out_1l,title="FRAMAcloud3",offset = f3ofst,color=showcloud ? red : na,transp=0, linewidth = 1)
+//
+plot(fractfhi,title="FRAMAoutH",color=green,transp=0, linewidth = 2)
+plot(fractflo,title="FRAMAoutL",color=red,transp=0, linewidth = 2)
+plot(fract4tf, color=orange, linewidth=2)
+//
+//plot(out_3,title="FRAMAout3ahead",offset = f3ofst, color=red,transp=40, linewidth = 2)
+//plot(lin_reg,title="linreg",color=green,transp=60, linewidth = 2)
+//plot(lin_reg2,title="linreglong",color=olive,transp=60, linewidth = 2)
